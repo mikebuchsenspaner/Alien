@@ -17,9 +17,11 @@
 </head>
 <body>
     <script>
+        // Definição das dimensões do jogo
         const larguraJogo = 700;
         const alturaJogo = 850;
 
+        // Configuração inicial do Phaser
         const config = {
             type: Phaser.AUTO,
             width: larguraJogo,
@@ -28,8 +30,8 @@
             physics: {
                 default: 'arcade',
                 arcade: {
-                    gravity: { y: 300 },
-                    debug: true
+                    gravity: { y: 300 }, // Gravidade atuando para baixo
+                    debug: true // Modo de depuração ativado para visualizar colisões
                 }
             },
 
@@ -40,46 +42,58 @@
             }
         };
 
+        // Inicialização do jogo
         const game = new Phaser.Game(config);
 
+        // Variáveis globais
         var alien, teclado, fogo, plataforma, moeda, coracao, placar;
         var pontuacao = 0;
 
+        // Função para carregar os assets do jogo
         function preload() {
-            this.load.image('background', 'assets/bg.png');
-            this.load.image('player', 'assets/alienigena.png');
-            this.load.image('turbo_nave', 'assets/turbo.png');
-            this.load.image('plataforma_tijolo', 'assets/tijolos.png');
-            this.load.image('moeda', 'assets/moeda.png');
-            this.load.image('coracao', 'assets/coracao.png');
+            this.load.image('background', 'assets/bg.png'); // Fundo do jogo
+            this.load.image('player', 'assets/alienigena.png'); // Personagem
+            this.load.image('turbo_nave', 'assets/turbo.png'); // Efeito de turbo
+            this.load.image('plataforma_tijolo', 'assets/tijolos.png'); // Plataforma
+            this.load.image('moeda', 'assets/moeda.png'); // Moeda coletável
+            this.load.image('coracao', 'assets/coracao.png'); // Coração coletável
         }
         
+        // Função para criação dos elementos do jogo
         function create() {
             this.add.image(larguraJogo/2, alturaJogo/2, 'background');
             
+            // Criação do efeito de turbo (inicialmente invisível)
             fogo = this.add.sprite(0, 0, 'turbo_nave');
             fogo.setVisible(false);
 
+            // Criação do personagem alien
             alien = this.physics.add.sprite(larguraJogo/2, 0, 'player');
-            alien.setCollideWorldBounds(true);
+            alien.setCollideWorldBounds(true); // Impede que o personagem saia dos limites do jogo
             
+            // Configuração dos controles
             teclado = this.input.keyboard.createCursorKeys();
 
+            // Criação de uma plataforma fixa
             plataforma = this.physics.add.staticImage(larguraJogo/2, alturaJogo/2, 'plataforma_tijolo');
             this.physics.add.collider(alien, plataforma);
 
+            // Criação da moeda coletável
             moeda = this.physics.add.sprite(larguraJogo/2, 0, 'moeda');
             moeda.setCollideWorldBounds(true);
-            moeda.setBounce(0.7);
+            moeda.setBounce(0.7); // Faz a moeda quicar ao tocar na plataforma
             this.physics.add.collider(moeda, plataforma);
 
+            // Criação do coração coletável
             coracao = this.physics.add.sprite(larguraJogo/3, 0, 'coracao');
             coracao.setCollideWorldBounds(true);
             coracao.setBounce(0.7);
             this.physics.add.collider(coracao, plataforma);
 
+            // Exibição da pontuação na tela
             placar = this.add.text(50, 50, 'Moedas: ' + pontuacao, { fontSize: '45px', fill: '#495613' });
 
+            // Verifica colisão entre o alien e a moeda
             this.physics.add.overlap(alien, moeda, function() {
                 moeda.setVisible(false);
                 var posicaoMoeda_Y = Phaser.Math.RND.between(50, 650);
@@ -89,6 +103,7 @@
                 moeda.setVisible(true);
             });
 
+            // Verifica colisão entre o alien e o coração
             this.physics.add.overlap(alien, coracao, function() {
                 coracao.setVisible(false);
                 var posicaoCoracao_Y = Phaser.Math.RND.between(50, 650);
@@ -99,31 +114,39 @@
             });
         }
 
+        // Função de atualização do jogo (executada a cada frame)
         function update() {
+            // Movimento para a esquerda
             if (teclado.left.isDown) {
                 alien.setVelocityX(-150); 
             } 
+            // Movimento para a direita
             else if (teclado.right.isDown) {
                 alien.setVelocityX(150); 
             } 
+            // Sem movimento horizontal
             else { 
                 alien.setVelocityX(0); 
             }
 
+            // Pulo do personagem
             if (teclado.up.isDown) {
                 alien.setVelocityY(-150);
-                ativarTurbo();
+                ativarTurbo(); // Ativa o efeito de turbo
             } else { 
-                semTurbo();
+                semTurbo(); // Desativa o efeito de turbo
             }
 
+            // Posiciona o efeito de turbo abaixo do personagem
             fogo.setPosition(alien.x, alien.y + alien.height / 2);
         }
 
+        // Função para ativar o efeito de turbo
         function ativarTurbo() {
             fogo.setVisible(true);
         }
 
+        // Função para desativar o efeito de turbo
         function semTurbo() {
             fogo.setVisible(false);
         }
